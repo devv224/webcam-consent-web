@@ -36,6 +36,42 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // giới hạn 10MB / ảnh
 });
 
+// Cho phép xem ảnh trực tiếp qua link, ví dụ: /uploads/ten-file.jpg
+app.use("/uploads", express.static(UPLOAD_DIR));
+
+// Trang xem tất cả ảnh đã nhận được (dạng thư viện ảnh đơn giản)
+app.get("/gallery", (req, res) => {
+  const files = fs.readdirSync(UPLOAD_DIR)
+    .filter(f => f.endsWith(".jpg") || f.endsWith(".jpeg") || f.endsWith(".png"))
+    .sort()
+    .reverse(); // ảnh mới nhất lên đầu
+
+  const imagesHtml = files.map(f => `
+    <div style="margin-bottom:24px;">
+      <img src="/uploads/${f}" style="max-width:100%;border-radius:8px;" />
+      <p style="color:#94a3b8;font-size:13px;">${f}</p>
+    </div>
+  `).join("");
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <title>Ảnh đã nhận</title>
+      <style>
+        body { font-family: system-ui, sans-serif; background:#0f172a; color:#e2e8f0; padding:20px; max-width:600px; margin:0 auto; }
+        h1 { font-size:20px; }
+      </style>
+    </head>
+    <body>
+      <h1>Ảnh đã nhận (${files.length})</h1>
+      ${files.length === 0 ? "<p>Chưa có ảnh nào.</p>" : imagesHtml}
+    </body>
+    </html>
+  `);
+});
+
 // Endpoint nhận ảnh
 app.post("/upload", upload.single("photo"), (req, res) => {
   if (!req.file) {
