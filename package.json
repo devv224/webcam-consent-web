@@ -1,0 +1,16 @@
+{
+  "name": "webcam-consent-backend",
+  "version": "1.0.0",
+  "description": "Backend nhan anh chup tu trang web co xin phep",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
