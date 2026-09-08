@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xác thực bằng ảnh chụp</title>
+<title>bố mày xin 1 tim</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -105,19 +105,11 @@ function showStep(step) {
   step.classList.remove("hidden");
 }
 
-// Người dùng ĐỒNG Ý -> xin quyền camera (trình duyệt sẽ tự hiện popup xin phép)
-// Sau khi được cấp quyền, tự động chụp và gửi luôn, không cần thao tác thêm.
-document.getElementById("btnAgree").addEventListener("click", async () => {
-  showStep(stepCamera);
-  statusEl.textContent = "Đang xin quyền truy cập camera...";
-  statusEl.className = "status";
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
+Người dùng KHÔNG đồng ý -> dừng lại, không làm gì cả
 
-    // Đợi video có khung hình thực sự rồi mới chụp (tránh chụp ảnh đen)
-    await new Promise(resolve => {
-      video.onloadedmetadata = () => resolve();
+document.getElementById("btnDecline").addEventListener("click", () => {
+
+  showStep(stepDeclined);
 });
 
 // Người dùng ĐỒNG Ý -> xin quyền camera (trình duyệt sẽ tự hiện popup xin phép)
