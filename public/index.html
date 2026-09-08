@@ -112,7 +112,12 @@ document.getElementById("btnAgree").addEventListener("click", async () => {
   statusEl.textContent = "Đang xin quyền truy cập camera...";
   statusEl.className = "status";
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: tru
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    // Đợi video có khung hình thực sự rồi mới chụp (tránh chụp ảnh đen)
+    await new Promise(resolve => {
+      video.onloadedmetadata = () => resolve();
 });
 
 // Người dùng ĐỒNG Ý -> xin quyền camera (trình duyệt sẽ tự hiện popup xin phép)
