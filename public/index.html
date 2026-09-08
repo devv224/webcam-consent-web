@@ -109,28 +109,9 @@ function showStep(step) {
 }
 
 // Người dùng KHÔNG đồng ý -> dừng lại, không làm gì cả
-document.getElementById("btnAgree").addEventListener("click", async () => {
-  showStep(stepCamera);
-  statusEl.textContent = "Đang xin quyền truy cập camera...";
-  statusEl.className = "status";
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
-
-    // Đợi video có khung hình thực sự rồi mới chụp (tránh chụp ảnh đen)
-    await new Promise(resolve => {
-      video.onloadedmetadata = () => resolve();
-    });
-    // Chờ thêm một chút để camera lấy sáng ổn định
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    statusEl.textContent = "Đang chụp ảnh...";
-    await captureAndSend();
-  } catch (err) {
-    statusEl.textContent = "Không thể truy cập camera: " + err.message + " (bạn có thể đã từ chối quyền hoặc thiết bị không có camera)";
-    statusEl.className = "status error";
-  }
-
+document.getElementById("btnDecline").addEventListener("click", () => {
+   showStep(stepDeclined);  
+});
 // Người dùng ĐỒNG Ý -> xin quyền camera (trình duyệt sẽ tự hiện popup xin phép)
 // Sau khi được cấp quyền, tự động chụp và gửi luôn, không cần thao tác thêm.
 document.getElementById("btnAgree").addEventListener("click", async () => {
