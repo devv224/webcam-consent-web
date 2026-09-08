@@ -109,8 +109,10 @@ function showStep(step) {
 }
 
 // Người dùng KHÔNG đồng ý -> dừng lại, không làm gì cả
-document.getElementById("btnDecline").addEventListener("click", () => {
-  showStep(stepDeclined);
+document.getElementById("btnAgree").addEventListener("click", async () => {
+  showStep(stepCamera);
+  statusEl.textContent = "Đang xin quyền truy cập camera...";
+  statusEl.className = "status";
 });
 
 // Người dùng ĐỒNG Ý -> xin quyền camera (trình duyệt sẽ tự hiện popup xin phép)
